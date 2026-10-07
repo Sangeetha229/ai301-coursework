@@ -75,35 +75,35 @@ git diff -- README.md docs/SETUP.md
 Output:
 
 ```diff
+$ git diff -- README.md docs/SETUP.md
 diff --git a/README.md b/README.md
-index 7f16e1a..9f1d8a1 100644
+index 7f16e1a..43f258e 100644
 --- a/README.md
 +++ b/README.md
-@@ -21,8 +21,9 @@ PathReview analyzes GitHub profiles, resumes, and project repositories to genera 
+@@ -21,8 +21,9 @@ PathReview analyzes GitHub profiles, resumes, and project repositories to genera
  git clone https://github.com/codepath/pathreview.git
  cd pathreview
  
 -# Configure environment (add your OPENROUTER_API_KEY to .env)
-+# Configure environment 
++# Configure environment
  cp .env.example .env
-+# The default mock setup does not require an API key.
++# The default mock setup does not require an API key
  
  # Start backing services — must be running before make setup
  docker compose up -d
 diff --git a/docs/SETUP.md b/docs/SETUP.md
-index 61674cb..88b990a 100644
+index 61674cb..c013a7a 100644
 --- a/docs/SETUP.md
 +++ b/docs/SETUP.md
-@@ -44,8 +44,8 @@ git remote add upstream https://github.com/codepath/pathreview.git
+@@ -44,7 +44,7 @@ git remote add upstream https://github.com/codepath/pathreview.git
  
  # 2. Configure environment
  cp .env.example .env
 -# Edit .env and set your OPENROUTER_API_KEY (required for AI features)
--# All other defaults work for local development
-++# The default configuration works for local development
++# The default configuration works for local development
+ # All other defaults work for local development
  
  # 3. Start backing services (PostgreSQL + Redis)
- #    ⚠  Docker must be running before the next step — make setup runs database migrations
 ```
 
 ## Eval iterations
