@@ -75,7 +75,6 @@ git diff -- README.md docs/SETUP.md
 Output:
 
 ```diff
-$ git diff -- README.md docs/SETUP.md
 diff --git a/README.md b/README.md
 index 7f16e1a..43f258e 100644
 --- a/README.md
