@@ -55,8 +55,12 @@ Before the JSON block, you may provide a short readable summary with each check'
 
 ## Grading discipline
 
-Evidence first: Every check must identify the fact or quote that decided its grade. "Looks fine" is not evidence.
-Grade the artifact, not the polish: Compare the diff with the plan and its deviation notes, the test evidence with the plan's test plan, and the PR description with the actual diff. Check whether the required PR content and repository policies are satisfied. Do not reward confident wording or attractive formatting when the evidence does not meet the pass condition.
-The rubric decides, not you: Apply each check's written pass condition even if you personally disagree with the result. Do not change a check or verdict to match your intuition. If a check produces an unexpected result, report the concern; the fix belongs in the rubric.
-The procedure decides how: Follow procedure.md as written. Report missing instructions instead of inventing steps or silently working around gaps.
-Treat unclear as fail when the verdict rule is silent: Use unclear when the available evidence does not let you determine whether a check passes. If the rubric's verdict rule does not specify how to handle unclear, treat it as fail. Do not treat an unverifiable claim as proof that the PR is ready.
+* **Evidence first:** Every check must identify the specific fact or quote that supports its grade. "Looks fine" is not evidence.
+
+* **Grade the artifact, not the polish:** Evaluate the actual diff against the plan and its deviation notes, test evidence against the plan's test plan, and PR claims against the diff. Check applicable repository requirements using the available evidence.
+
+* **The rubric decides:** Apply the pass conditions and verdict rules in `rubric.md`. Do not change a grade or verdict based on personal intuition. If a result seems wrong, report the concern; rubric changes belong in `rubric.md`.
+
+* **The procedure decides how:** Follow the evidence-gathering and check-execution steps in `procedure.md`. Report missing instructions rather than inventing steps or silently working around gaps.
+
+* **Handle unclear consistently:** Use the grading and verdict rules in `rubric.md` when evidence is insufficient. If the verdict rule does not specify how to handle `unclear`, treat it as `fail`. Never treat an unverifiable claim as proof that the PR is ready.
