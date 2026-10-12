@@ -26,7 +26,7 @@ Read the plan before the diff because the plan defines the expected scope. Read 
 2. Run or inspect the available changed-file summary and actual diff. Record every changed file and the purpose of its changes.
 3. Compare the actual diff against the planned scope and exclusions. Look for unapproved behavior changes, unrelated features, configuration changes, and refactoring.
 4. Compare the PR description and deviation statement with the actual diff. Record any mismatch between the claimed and implemented changes.
-5. Mark `pass` when the changes follow the accepted plan and the description accurately represents the diff. Mark `fail` when evidence demonstrates unapproved changes or materially inaccurate claims. Mark `unclear` when the necessary evidence is unavailable.
+5. Record the evidence relevant to this check and note any uncertainty. During check execution, apply the grading criteria and verdict rules defined in `rubric.md`.
 
 ### 2. Not tested
 
@@ -35,7 +35,7 @@ Read the plan before the diff because the plan defines the expected scope. Read 
 3. Distinguish actual command output from the author's assessment or a claim that a check passed.
 4. Compare the recorded results with the planned behavior and applicable repository testing requirements. Record missing, failed, skipped, or insufficiently supported checks.
 5. Do not require unit tests or integration tests automatically for every documentation-only change. Evaluate verification against the actual change, the plan, and repository requirements.
-6. Mark `pass` when required verification is adequately supported by evidence. Mark `fail` when evidence demonstrates a required check failed or was skipped contrary to requirements. Mark `unclear` when the evidence is insufficient to determine whether a required condition was met.
+6. Record the evidence relevant to this check and note any uncertainty. During check execution, apply the grading criteria and verdict rules defined in `rubric.md`.
 
 ### 3. Unreviewable
 
@@ -43,7 +43,7 @@ Read the plan before the diff because the plan defines the expected scope. Read 
 2. Look for unrelated edits, unnecessary refactoring, debugging statements, commented-out alternatives, unused helpers, abandoned code, duplicated content, and changes that obscure the intended fix.
 3. Compare extra changes with the plan to determine whether they make the implementation unnecessarily difficult to understand or review.
 4. Record the specific file, diff hunk, or code detail that supports the assessment. Distinguish a material reviewability problem from a suggestion for optional cleanup.
-5. Mark `pass` when the diff is focused, understandable, and reviewable. Mark `fail` when evidence demonstrates material reviewability problems. Mark `unclear` when the relevant diff is unavailable or incomplete.
+5. Record the evidence relevant to this check and note any uncertainty. During check execution, apply the grading criteria and verdict rules defined in `rubric.md`.
 
 ### 4. Standards wall
 
@@ -52,7 +52,7 @@ Read the plan before the diff because the plan defines the expected scope. Read 
 3. Compare each applicable requirement with the actual diff, test evidence, PR description, and supplied submission artifacts.
 4. Verify required documentation, changelog entries, tests, issue references, checklists, formatting, and policy disclosures where applicable.
 5. Inspect the relevant files and evidence before concluding that a required item is missing. If the package does not establish whether a requirement was satisfied, record the uncertainty.
-6. Mark `pass` when applicable repository requirements are satisfied. Mark `fail` when evidence demonstrates a requirement was violated. Mark `unclear` when evidence is insufficient to establish compliance.
+6. Record the evidence relevant to this check and note any uncertainty. During check execution, apply the grading criteria and verdict rules defined in `rubric.md`.
 
 ## Check execution
 
@@ -69,12 +69,7 @@ Read the plan before the diff because the plan defines the expected scope. Read 
 
 4. Write one concise, evidence-based explanation for each grade. Identify the relevant file, command output, diff change, plan requirement, or repository rule.
 
-5. When evidence is absent, distinguish between a demonstrated violation and an unresolved condition:
-
-   * Use `pass` only when evidence supports the pass condition.
-   * Use `fail` when evidence demonstrates a violation.
-   * Use `unclear` when evidence is insufficient to decide.
-   * Never treat missing evidence as a pass or invent test results, repository rules, or implementation details.
+5. If evidence is missing or incomplete, record what is unavailable and apply the grading rules in `rubric.md`. Never invent test results, repository rules, or implementation details.
 
 6. Grade each check independently. A passing check does not compensate for a failing or unclear check.
 
@@ -84,16 +79,13 @@ Read the plan before the diff because the plan defines the expected scope. Read 
 
 ## Verdict assembly
 
-1. Apply the verdict rule in `rubric.md` after grading all four checks:
+1. Apply the verdict rules defined in `rubric.md`.
 
-   * **Accept:** all four required checks are `pass`.
-   * **Reject:** any required check is `fail` or `unclear`.
+2. If multiple checks are non-passing, select the first non-passing check in rubric order as the deciding check.
 
-2. Do not average grades or allow passing checks to override a failing or unclear check.
+3. Include evidence for all four checks and identify the specific fact that determined the deciding check.
 
-3. If all checks pass, return `accept` with an evidence statement for each check.
-
-4. If any check fails or is unclear, return `reject`. Select the first non-passing check in rubric order as the deciding check.
+4. Before returning the result, verify that all four checks appear exactly once, the grades and verdict follow `rubric.md`, and every evidence statement is supported by the package.
 
 5. In the deciding check's evidence statement, quote or identify the specific fact that determined the rejection. Include the relevant file, diff detail, command result, plan requirement, or repository rule when available.
 
