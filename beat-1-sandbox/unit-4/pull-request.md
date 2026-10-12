@@ -8,18 +8,31 @@
 
 **Branch:** `docs/73-llm-config-docs`
 
-## Eval Iterations
+## Eval iterations
 
-### Run History
+### Run history
 
-The evaluation runs with scored results, in chronological order, were:
+The following scored evaluation runs were performed in chronological order. Each run evaluated the specified package group, followed by a full evaluation of all 20 scored packages.
 
-* 2/2 scored items agreed.
-* 3/3 scored items agreed.
-* 5/5 scored items agreed.
-* 5/5 scored items agreed.
-* 5/5 scored items agreed.
-* **20/20 scored items agreed — PASS (final full run).**
+| Run | Packages evaluated                               | Agreement |
+| --- | ------------------------------------------------ | --------: |
+| 1   | `pkg-01`, `pkg-02`                               |       2/2 |
+| 2   | `pkg-03`, `pkg-04`, `pkg-05`                     |       3/3 |
+| 3   | `pkg-06`, `pkg-07`, `pkg-08`, `pkg-09`, `pkg-10` |       5/5 |
+| 4   | `pkg-11`, `pkg-12`, `pkg-13`, `pkg-14`, `pkg-15` |       5/5 |
+| 5   | `pkg-16`, `pkg-17`, `pkg-18`, `pkg-19`, `pkg-20` |       5/5 |
+| 6   | All scored packages: `pkg-01`–`pkg-20`           |     20/20 |
+
+The final full evaluation reported **20/20 scored items agreed**, meeting the required threshold of 18/20. The category results were:
+
+| Category       | Agreement |
+| -------------- | --------: |
+| Clear accept   |       7/7 |
+| Not tested     |       4/4 |
+| Silent drift   |       4/4 |
+| Standards wall |       2/2 |
+| Unreviewable   |       3/3 |
+| **Total**      | **20/20** |
 
 The final evaluation reported:
 
@@ -35,14 +48,24 @@ The successful final run used the following command:
 python -X utf8 run_eval.py --skill ~/.claude/skills/pr-precheck --save-run eval-run.txt
 ```
 
-## Package Analysis — pkg-14
+### Package Analysis — pkg-14
 
-**Rubric Decision:** Reject
-**Gold Label:** Reject
-**Category:** `not-tested`
-**Result:** Agreement
+* **Rubric decision:** Reject
+* **Gold label:** Reject
+* **Agreement:** Yes
+* **Category:** Not tested
 
-My rubric decided **Reject**, and the gold label was also **Reject**. The package belongs to the `not-tested` category. My rubric correctly rejected it because the required testing evidence was insufficient to establish that the change had been properly tested. This decision matched the expected gold label.
+**Evidence and reasoning**
+
+The accepted plan requires rerunning both JSON POST reproduction commands, verifying that `Content-Type: application/json` appears in both cases, checking the two-header control, and running the test suite.
+
+However, `test_evidence.md` states:
+
+Verified with a GET request carrying one custom header: the header arrives with its casing preserved and the request succeeds.
+
+This evidence verifies header casing for a GET request. It does not demonstrate that the reported single-header JSON POST bug is fixed, that the two-header control still behaves correctly, or that the test suite was run successfully. The statement “All tests pass” is not accompanied by a test-suite command or its observed output in the supplied package.
+
+Therefore, the available evidence does not establish that the required verification was completed. Under the `Not tested` pass condition and the rubric's missing-evidence rule, the check is non-passing and the PR is rejected. This matches the gold label.
 
 ### Check Rationale
 
