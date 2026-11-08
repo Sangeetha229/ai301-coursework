@@ -9,31 +9,34 @@
 
 ### Unit 5 – Issue-Scout
 
-I developed and improved an `issue-scout` skill in Claude Code to search for and evaluate beginner-friendly open-source issues. I refined its search strategy, candidate-selection rubric, and evaluation criteria through repeated testing. The skill considers my Java experience, contribution preferences, issue scope, repository activity, maintainer activity, and existing work. The latest evaluation achieved **20/20 on the scored evaluation items**.
+I developed and improved an `issue-scout` skill in Claude Code to search for and evaluate beginner-friendly open-source issues. I refined its search strategy, candidate-selection rubric, and evaluation criteria through repeated testing. The skill considers my Java experience, contribution preferences, issue scope, repository activity, maintainer activity, and existing work.
+
+The latest evaluation achieved **20/20 on the scored evaluation items**. The latest scan evaluated **641 unique candidates**, with five issues accepted from full evaluations.
 
 ### Unit 6 – Voice-Guard and Repository Memory
 
-I developed a voice guard using Claude Code hooks and `check_voice.py` to check outgoing GitHub comments and prevent messages that violate my communication guidelines. I also created a local `CLAUDE.local.md` file to preserve repository-specific contribution rules, build commands, and issue-related findings across Claude Code sessions. I centralized my voice guidance and configured a `PreToolUse` hook so that communication rules can be checked before supported GitHub actions.
+I developed a voice guard using Claude Code hooks and `check_voice.py` to check outgoing GitHub comments and prevent messages that violate my communication guidelines.
 
-### Unit 7 – Ship-Gate and Plan-Check
+I also created a local `CLAUDE.local.md` file to preserve repository-specific contribution rules, build commands, and issue-related findings across Claude Code sessions. I centralized my voice guidance and configured a `PreToolUse` hook so communication rules can be checked before supported GitHub actions.
 
-**Status:** Setup and plan review completed. Implementation and final verification are pending.
+### Unit 7 – Plan-Check and Ship-Gate
 
-I installed the `ship-gate` skill in my local Claude Code configuration and configured its `PreToolUse` hook alongside the existing voice-guard hook. The installer created a `ship-manifest.md` in the target repository and added the local working files to `.git/info/exclude`.
+I used the plan-check workflow to evaluate the proposed solution before implementation. The first evaluation identified missing TLS 1.2 control tests and an outdated Mockito expectation. I updated the plan to address both findings.
 
-I documented the repository's required pre-PR checks:
+The final plan-check verdict was **ACCEPT**, with all eight checks passing: diagnosis, scope, file, approach, test plan, risks, evidence uncertainty, and comment conventions.
+
+I installed and configured the ship-gate hook in Claude Code. I created a local `ship-manifest.md` containing the repository's formatting and full verification commands:
+
 - `.\mvnw.cmd spotless:check`
 - `.\mvnw.cmd clean verify`
 
-I ran both checks before implementation. Spotless passed. The baseline `clean verify` failed in the two TLS 1.3 regression tests added for reproduction; these failures are part of the issue being investigated and are not excluded from the required checks.
+I verified the manifest checks before and after implementation. The final formatting and full verification checks passed.
 
-I also tested the ship-gate hook using the assignment's `gh pr create --help` command. It stopped the command because no PR title and body file were supplied, confirming that the hook was active. The voice-guard hook had also been verified during the earlier PowerShell test.
-
-I used the `plan-check` skill to evaluate `plan.md` and the local `plan-comment.md` draft for issue #278. The first evaluation was rejected because the plan did not account for an affected Mockito expectation or explicit TLS 1.2 compatibility controls. I revised the plan to address both findings. The final evaluation returned **ACCEPT**, with all eight checks passing. The plan and draft comment remain local; I did not post the draft comment on the issue.
+I also tested the ship-gate behavior with the repository's PR command help invocation. The hook stopped the command because there was no PR text to check. This confirmed that the ship-gate was enforcing its intended check rather than allowing an unchecked outgoing PR command.
 
 ### Unit 8 – PR-Monitor
 
-**Status:** Pending. I will document the Unit 8 toolkit and its use during the pull request process after completing that work.
+**Status:** Pending. The implementation has been committed locally, but the pull request has not yet been created. I will document PR-Monitor setup and use after creating the pull request.
 
 ## Why I Chose This Issue
 
@@ -41,15 +44,13 @@ I searched for beginner-friendly Java issues using GitHub search commands and th
 
 I also explored the [Open Source Issue Tracker](https://open-source-issue-tracker.onrender.com/) to find suitable contribution opportunities. However, I found that many beginner-friendly issues were stale. Some of the issues I claimed had their claim comments deleted, and in a few cases another contributor opened a pull request after I had started working on the issue. Since I could not always complete an issue immediately due to limited time, these experiences taught me the importance of checking recent activity, verifying existing work, and selecting issues that I can realistically investigate and complete.
 
-The latest Issue-Scout scan evaluated **641 unique candidates**. Five issues were accepted from the full evaluations, and this issue was selected as a good match for my Java backend experience. The skill rated it as a straightforward, focused bug fix.
+The latest Issue-Scout scan evaluated **641 unique candidates**. Five issues were accepted from full evaluations, and this issue was selected as a good match for my Java backend experience. The skill rated it as a straightforward, focused bug fix.
 
-I chose issue #278 because it identifies a specific problem in two Java classes: `ActuatorClient` and `ActuatorProbe`. Both use a hardcoded TLS 1.2 protocol, which can prevent connections to servers that require TLS 1.3. The proposed change appears limited and provides an opportunity to learn more about Java SSL configuration, TLS protocol negotiation, and testing secure connections.
+I chose issue #278 because it identifies a specific problem in two Java classes: `ActuatorClient` and `ActuatorProbe`. Both use a hardcoded TLS 1.2 protocol, which can prevent connections to servers that require TLS 1.3. The proposed change was limited and provided an opportunity to learn more about Java SSL configuration, TLS protocol negotiation, and testing secure connections.
 
 The Issue-Scout helped narrow down the search, but I still needed to verify the issue's behavior through reproduction and inspect the existing implementation before making changes.
 
 **Claim comment:** Posted on November 7, 2026. The comment identifies the planned TLS 1.3-only reproduction and asks whether another contributor is already working on the issue.
-
-**Claim comment link:** [View posted claim comment](https://github.com/oscarbol09/jvm-mcp/issues/278#issuecomment-6711994926)
 
 **Toolkit:**
 - Used GitHub search commands to discover Java issues.
@@ -68,7 +69,7 @@ The repository has two separate classes that create custom SSL contexts for inse
 - `core/src/main/java/dev/jvmmcp/core/spring/ActuatorClient.java`
 - `core/src/main/java/dev/jvmmcp/core/spring/ActuatorProbe.java`
 
-Both classes use:
+Both classes originally used:
 
 ```java
 SSLContext.getInstance("TLSv1.2");
@@ -84,7 +85,7 @@ The existing insecure-connection behavior, including its trust-all certificate h
 
 ### Current Behavior
 
-Source inspection identified that both `ActuatorClient` and `ActuatorProbe` explicitly request `TLSv1.2` when creating their custom insecure SSL contexts.
+Source inspection identified that both `ActuatorClient` and `ActuatorProbe` explicitly requested `TLSv1.2` when creating their custom insecure SSL contexts.
 
 The baseline reproduction against a TLS 1.3-only local HTTPS server confirmed that:
 
@@ -95,21 +96,21 @@ The client error message differs from the wording reported in the original issue
 
 ### Affected Components
 
-1. **`ActuatorClient.java`**
+1. `ActuatorClient.java`
    - Creates the HTTP client used to retrieve Actuator health, metrics, and startup information.
-   - Its insecure HTTPS path creates a custom SSL context using TLS 1.2.
+   - Its insecure HTTPS path creates a custom SSL context.
 
-2. **`ActuatorProbe.java`**
+2. `ActuatorProbe.java`
    - Discovers Actuator endpoints by checking candidate ports and requesting `/actuator/beans`.
-   - Its insecure HTTPS path also creates a custom SSL context using TLS 1.2.
+   - Its insecure HTTPS path also creates a custom SSL context.
 
-3. **`ActuatorProbeTest.java`**
-   - Contains HTTPS discovery tests and a test that mocks `SSLContext.getInstance("TLSv1.2")`.
-   - The mock expectation must be updated to match the proposed generic `"TLS"` protocol request.
+3. `ActuatorProbeTest.java`
+   - Contains HTTPS discovery tests and a test that mocks `SSLContext.getInstance(...)`.
+   - The mock expectation needed to match the updated protocol selection.
 
-4. **`ActuatorClientTest.java`**
+4. `ActuatorClientTest.java`
    - Contains tests for insecure client construction.
-   - Includes TLS 1.3-specific HTTPS regression coverage, with TLS 1.2 compatibility coverage planned.
+   - TLS 1.3-specific HTTPS regression coverage was added.
 
 **Toolkit:**
 - Used Claude Code to inspect the repository and trace the SSL context creation paths.
@@ -120,7 +121,7 @@ The client error message differs from the wording reported in the original issue
 
 ### Environment Setup
 
-The baseline reproduction was performed on the original production implementation at revision `a54bee4`. The regression tests were added locally to the two test classes; production code remained unchanged.
+The baseline reproduction was performed on the original production implementation at revision `a54bee4e0179bd8a0de61e843c1b7e65df4bb46a`. The regression tests were added locally to the two test classes; production code remained unchanged.
 
 | Component | Details |
 |---|---|
@@ -170,18 +171,10 @@ Select-String -Path `
   -Pattern 'SSLContext\.getInstance\("TLSv1\.2"\)'
 ```
 
-Both classes contain:
+Both classes originally contained:
 
 ```java
-private static SSLContext trustAllSslContext() {
-    try {
-        SSLContext context = SSLContext.getInstance("TLSv1.2");
-        context.init(null, new TrustManager[] {new TrustAllManager()}, null);
-        return context;
-    } catch (GeneralSecurityException e) {
-        throw new IllegalStateException("Unable to initialise insecure TLS context", e);
-    }
-}
+SSLContext context = SSLContext.getInstance("TLSv1.2");
 ```
 
 **Step 2: Prepare the TLS 1.3-only HTTPS server**
@@ -196,7 +189,7 @@ Both regression tests reuse the repository's existing `actuator-test-keystore.p1
 
 Each test starts a local `com.sun.net.httpserver.HttpsServer` on the loopback address and an ephemeral port.
 
-The server uses a TLS SSL context and an `HttpsConfigurator` that restricts its enabled protocols:
+The server uses an `HttpsConfigurator` that restricts its enabled protocols:
 
 ```java
 SSLParameters sslParams = getSSLContext().getDefaultSSLParameters();
@@ -218,21 +211,7 @@ Test file:
 
 `core/src/test/java/dev/jvmmcp/core/spring/ActuatorProbeTest.java`
 
-The test starts the TLS 1.3-only server, enables insecure mode, and calls `probePort()`:
-
-```java
-@Test
-@DisplayName("probePort discovers a TLS 1.3-only HTTPS actuator when insecure is enabled")
-void shouldDiscoverTls13OnlyHttpsEndpointWhenInsecure() throws Exception {
-    int httpsPort = startHttpsBeansServer("TLSv1.3");
-
-    ActuatorProbe probe = new ActuatorProbe(new ActuatorAuth(null, null, null, true));
-    Optional<String> json = probe.probePort(httpsPort);
-
-    assertThat(json).contains(BEANS_PAYLOAD);
-    assertThat(negotiatedProtocol.get()).isEqualTo("TLSv1.3");
-}
-```
+The test starts the TLS 1.3-only server, enables insecure mode, and calls `probePort()`.
 
 Expected behavior: the probe returns the beans payload and the server records `TLSv1.3`.
 
@@ -247,19 +226,10 @@ Test file:
 The test starts a TLS 1.3-only HTTPS health endpoint and constructs the client using the public two-argument constructor:
 
 ```java
-@Test
-void testInsecureAuthConnectsToTls13OnlyHttpsServer() throws Exception {
-    int httpsPort = startTls13OnlyHttpsHealthServer();
-
-    ActuatorClient insecureClient =
-            new ActuatorClient(
-                    "https://127.0.0.1:" + httpsPort,
-                    new ActuatorAuth(null, null, null, true));
-
-    assertThat(insecureClient.fetchEndpoint("/actuator/health"))
-            .isEqualTo("{\"status\":\"UP\"}");
-    assertThat(negotiatedProtocol.get()).isEqualTo("TLSv1.3");
-}
+ActuatorClient insecureClient =
+    new ActuatorClient(
+        "https://127.0.0.1:" + httpsPort,
+        new ActuatorAuth(null, null, null, true));
 ```
 
 Expected behavior: the client retrieves the health response and the server records `TLSv1.3`.
@@ -274,13 +244,11 @@ From the repository root, with JDK 21 selected:
 .\mvnw.cmd -pl core "-Dtest=ActuatorProbeTest,ActuatorClientTest" test
 ```
 
-The baseline run covered both test classes in one Maven invocation.
-
 **Step 6: Compare actual and expected behavior**
 
 The test results show that the TLS 1.3-only HTTPS scenario fails against the original production implementation.
 
-The client exposes the handshake exception. The probe returns an empty `Optional`, but its underlying connection exception is not captured.
+The client exposes the handshake exception. The probe returns an empty `Optional`, but its underlying connection exception was not captured.
 
 ### Reproduction Evidence
 
@@ -334,7 +302,7 @@ The full test output and stack trace are recorded in the local reproduction repo
 - Unrelated console text immediately before the results section was omitted and marked.
 - The reproduction report's excerpt-preparation note records these edits.
 
-**Reproduction commit:** `none` — the regression tests are uncommitted local changes.
+**Reproduction commit:** `none` — the regression tests were uncommitted local changes during the baseline reproduction.
 
 **Reproduction limitations:**
 - The target is a local JDK `HttpsServer`, not a Spring Boot application, reverse proxy, or load balancer.
@@ -342,7 +310,7 @@ The full test output and stack trace are recorded in the local reproduction repo
 - No `javax.net.debug` output or server-side log was captured to identify the server's exact reason for closing the handshake.
 - The probe returns an empty `Optional`; its underlying exception was not captured.
 - The TLS 1.3 negotiated-protocol assertions were not reached because both regression tests failed before a successful connection.
-- No TLS 1.2 control test or post-fix test has been run yet.
+- TLS 1.2 control tests were added and run during post-fix verification, not during the baseline reproduction.
 
 **Toolkit:**
 - Used Claude Code's `repro-check` skill to grade the claim and reproduction report for issue #278.
@@ -364,11 +332,9 @@ SSLContext.getInstance("TLSv1.2");
 
 One is in `ActuatorClient`, and the other is in `ActuatorProbe`.
 
-Both custom SSL contexts are used when insecure mode is enabled. The probe and client have separate responsibilities, so both paths need to be addressed.
+Both custom SSL contexts are used when insecure mode is enabled. The probe and client have separate responsibilities, so both paths needed to be addressed.
 
-The existing tests also contain a mock that expects `"TLSv1.2"`. That expectation must be updated if the production code changes to request the generic `"TLS"` protocol. Otherwise, the test may no longer intercept the SSL context creation.
-
-The initial plan review also identified the need for explicit TLS 1.2-only compatibility tests. The existing TLS 1.3 regression tests alone would not demonstrate that the change preserves TLS 1.2 connections.
+The existing tests also contained a mock that expected `"TLSv1.2"`. That expectation needed to be updated when the production code changed to request the generic `"TLS"` protocol.
 
 ### Proposed Solution
 
@@ -378,129 +344,158 @@ Replace the explicit TLS 1.2 protocol request with:
 SSLContext.getInstance("TLS");
 ```
 
-This allows the Java runtime to negotiate a supported TLS protocol rather than explicitly requesting TLS 1.2. On a compatible Java 21 runtime and server, this allows TLS 1.3 negotiation while retaining compatibility with TLS 1.2.
+This allows the Java runtime to negotiate a supported TLS protocol rather than explicitly requesting TLS 1.2. On a compatible Java 21 runtime and server, this allows TLS 1.3 negotiation.
 
-The existing trust-all certificate manager, SSL initialization, exception handling, and insecure-mode behavior should remain unchanged.
+The existing trust-all certificate manager and insecure-mode behavior remain unchanged.
 
 ### Implementation Plan
 
-The plan was reviewed and accepted by the `plan-check` skill. The approved implementation steps are:
+The plan was evaluated using plan-check and accepted after addressing its feedback.
 
-1. Update the SSL context creation in `ActuatorClient.java` from `"TLSv1.2"` to `"TLS"`.
-2. Update the SSL context creation in `ActuatorProbe.java` from `"TLSv1.2"` to `"TLS"`.
-3. Update the corresponding Mockito expectation in `ActuatorProbeTest.java` from `"TLSv1.2"` to `"TLS"`, including the test `shouldThrowOnGeneralSecurityException()`.
+1. Update SSL context creation in `ActuatorClient.java`.
+2. Update SSL context creation in `ActuatorProbe.java`.
+3. Update the corresponding mock expectation in `ActuatorProbeTest.java`.
 4. Retain the TLS 1.3-only HTTPS regression test for `ActuatorProbe`.
-5. Add a TLS 1.2-only HTTPS control test for `ActuatorProbe`, asserting successful discovery and negotiated protocol `TLSv1.2`.
-6. Retain the TLS 1.3-only HTTPS regression test for `ActuatorClient`.
-7. Add a TLS 1.2-only HTTPS control test for `ActuatorClient`, asserting a successful health response and negotiated protocol `TLSv1.2`.
-8. Preserve the existing trust-all behavior, SSL initialization, exception handling, and warning.
-9. Review the final changes and run the focused tests, formatting check, and full Maven verification.
+5. Retain the TLS 1.3-only HTTPS regression test for `ActuatorClient`.
+6. Add TLS 1.2-only control tests for both classes.
+7. Run the focused tests.
+8. Run the repository formatting check.
+9. Run complete Maven verification.
+10. Review the final diff and commit the focused implementation.
 
-No unrelated refactoring or changes to the duplicated helper methods are planned.
+**Plan-check result:** ACCEPT. All eight checks passed after revising the plan to include the updated mock expectation and TLS 1.2 control tests.
 
-**Toolkit – Plan-Check:**
-- Used Claude Code's `plan-check` skill to review `plan.md` and the draft `plan-comment.md` for issue #278.
-- The first evaluation returned **REJECT**. It identified a Mockito expectation that needed updating and the absence of explicit TLS 1.2 compatibility controls.
-- Revised the plan to include the Mockito update and TLS 1.2-only control tests for both affected classes.
-- Updated the test plan, affected-file list, risks, and verification steps.
-- Ran the plan-check evaluation again. **The final verdict was ACCEPT, with all eight checks passing.**
-- The accepted plan is ready for implementation. The draft comment remains local and was not posted to the issue.
+**Implementation deviation:** The client test helper was generalized from `startTls13OnlyHttpsHealthServer()` to `startHttpsHealthServer(String protocol)` so the same helper could exercise both TLS 1.3 and TLS 1.2. The probe test helper was also generalized to accept enabled protocols. These changes support the accepted test plan and do not change production behavior.
 
-**Toolkit – Ship-Gate:**
-- Installed the Unit 7 ship-gate files and configured the `PreToolUse` hook in the local Claude Code settings.
-- Verified that the ship-gate hook stopped the test `gh pr create --help` command because it did not include the required PR title and body file.
-- Created `ship-manifest.md` with the repository's required formatting and full verification commands.
-- Kept local working files excluded through `.git/info/exclude`.
+**Toolkit:**
+- Used Claude Code to trace the production code and identify the smallest proposed change.
+- Used plan-check to evaluate diagnosis, scope, files, implementation approach, tests, risks, evidence uncertainty, and comment conventions.
+- Revised the plan based on its findings before implementation.
 
 ## Testing Strategy
 
 ### Focused Tests
 
-Run both test classes together:
+The focused regression test command was:
 
 ```powershell
 .\mvnw.cmd -pl core "-Dtest=ActuatorProbeTest,ActuatorClientTest" test
 ```
 
-They can also be run individually:
+**Result: PASS**
 
-```powershell
-.\mvnw.cmd -pl core -Dtest=ActuatorProbeTest test
-```
+| Test class | Tests run | Result |
+|---|---:|---|
+| `ActuatorProbeTest` | 27 | Passed |
+| `ActuatorClientTest` | 43 | Passed |
+| **Total** | **70** | **All passed** |
 
-```powershell
-.\mvnw.cmd -pl core -Dtest=ActuatorClientTest test
-```
+The tests cover TLS 1.3-only and TLS 1.2-only local HTTPS endpoints for both the probe and client. They verify successful responses and the negotiated protocol.
 
 ### Formatting
 
-Apply formatting if needed:
-
-```powershell
-.\mvnw.cmd spotless:apply
-```
-
-Check formatting:
+Command:
 
 ```powershell
 .\mvnw.cmd spotless:check
 ```
 
+**Result: PASS.** The formatting check completed successfully.
+
 ### Full Verification
+
+Command:
 
 ```powershell
 .\mvnw.cmd clean verify
 ```
 
+**Result: BUILD SUCCESS.**
+
+| Module | Tests | Failures | Errors |
+|---|---:|---:|---:|
+| `core` | 595 | 0 | 0 |
+| `mcp-server` | 469 | 0 | 0 |
+
+Four tests were skipped because Docker was unavailable in the environment. No test failures or errors were reported.
+
 ### Regression Coverage
 
-The implementation must verify:
-
-- The probe can discover an Actuator endpoint served over TLS 1.3 when insecure mode is enabled.
-- The client can connect to an Actuator endpoint served over TLS 1.3 when insecure mode is enabled.
-- The probe can discover an Actuator endpoint served over TLS 1.2 when insecure mode is enabled.
-- The client can connect to an Actuator endpoint served over TLS 1.2 when insecure mode is enabled.
-- Existing self-signed HTTPS behavior remains covered.
-- The existing exception-handling test uses the updated SSL context protocol expectation.
-
-### Baseline Manifest Checks
-
-Before implementation, I ran the two required checks recorded in `ship-manifest.md`:
-
-| Check | Baseline result |
-|---|---|
-| `.\mvnw.cmd spotless:check` | **BUILD SUCCESS** — formatting check passed. |
-| `.\mvnw.cmd clean verify` | **BUILD FAILURE** — the two TLS 1.3 regression tests failed against the original implementation. |
-
-The full verification check remains required and will be rerun after implementation. The baseline TLS regression failures are not being treated as unrelated exclusions.
-
-**Test Results:** Pending. The baseline reproduction results and pre-implementation manifest checks are complete, but implementation and post-fix verification have not yet been performed.
+- Verified that the probe can discover an Actuator endpoint served over TLS 1.3 when insecure mode is enabled.
+- Verified that the client can connect to an Actuator endpoint served over TLS 1.3 when insecure mode is enabled.
+- Added TLS 1.2-only control coverage for both classes.
+- Verified the negotiated protocol in the local HTTPS test servers.
+- Updated the existing Mockito expectation to match `SSLContext.getInstance("TLS")`.
+- Preserved the existing test coverage and insecure-mode behavior.
 
 ## Implementation Notes
 
-- The project requires JDK 21 or later.
-- The `core` module should remain pure Java and avoid introducing Spring, ORM, or JSON framework dependencies.
-- Follow the existing project conventions and Java formatting rules.
-- Keep the change limited to TLS protocol selection and the regression tests.
-- Preserve the existing insecure-mode warning and trust-all certificate behavior.
-- No README change is currently expected because the proposed change does not alter documented constants, defaults, limits, or resource bounds.
-- The actual implementation and post-fix test results will be recorded after the changes are made.
+The implementation changed the protocol selection in both production classes:
+
+```java
+SSLContext.getInstance("TLSv1.2");
+```
+
+was replaced with:
+
+```java
+SSLContext.getInstance("TLS");
+```
+
+The following files were changed:
+
+1. `core/src/main/java/dev/jvmmcp/core/spring/ActuatorClient.java`
+   - Changed the SSL context protocol request to `"TLS"`.
+
+2. `core/src/main/java/dev/jvmmcp/core/spring/ActuatorProbe.java`
+   - Changed the SSL context protocol request to `"TLS"`.
+
+3. `core/src/test/java/dev/jvmmcp/core/spring/ActuatorClientTest.java`
+   - Retained TLS 1.3 regression coverage.
+   - Generalized the HTTPS test server helper to accept a protocol.
+   - Added TLS 1.2 control coverage.
+   - Verified the negotiated protocol and health response.
+
+4. `core/src/test/java/dev/jvmmcp/core/spring/ActuatorProbeTest.java`
+   - Updated the Mockito expectation to `"TLS"`.
+   - Retained TLS 1.3 regression coverage.
+   - Added TLS 1.2 control coverage.
+   - Generalized the HTTPS server helper to support protocol selection and record the negotiated protocol.
+
+The existing trust-all manager, SSL initialization, exception handling, and insecure-mode behavior were preserved. The client’s existing insecure warning was also preserved.
+
+No unrelated production refactoring was introduced. No README change was required because this change did not alter documented constants, configuration defaults, limits, or resource bounds.
+
+**Implementation commit:**
+
+```text
+0570361 fix(spring): allow TLS protocol negotiation for insecure actuator connections
+```
+
+The commit was created on branch:
+
+```text
+fix/278-actuator-tls-negotiation
+```
+
+The commit contains exactly the four Java production and test files listed above. The working tree was clean after the commit.
 
 ## Pull Request
 
 **Status:** Pending.
 
-No pull request link is available yet.
+The implementation is committed locally, but the pull request has not yet been created.
 
-After implementation and verification, I will:
+After implementation and verification, the following work remains:
 
-1. Review the final diff.
-2. Run the required formatting and verification commands.
-3. Write a concise pull request description explaining the problem and solution.
-4. Link the pull request to issue #278.
-5. Include the accepted reproduction evidence and relevant post-fix test results in the PR description.
+1. Complete the contribution story and review its evidence.
+2. Prepare a concise pull request description explaining the problem, implementation, and verification.
+3. Include the accepted reproduction evidence and post-fix test results in the PR description.
+4. Create the pull request from `fix/278-actuator-tls-negotiation` to the repository's target branch.
+5. Link the pull request to issue #278.
+6. Use PR-Monitor to track the pull request and document its results.
 
-The repository requests focused pull requests, passing verification, and Conventional Commit messages with a lowercase scope.
+The repository requests focused pull requests, passing verification, and Conventional Commit messages with a lowercase scope. The implementation commit follows the requested format.
 
 ## Learnings and Reflections
 
@@ -508,17 +503,17 @@ This issue helped me understand how Java SSL context configuration affects TLS p
 
 I learned that explicitly requesting a protocol such as TLS 1.2 can restrict the connection, while requesting the generic `"TLS"` protocol allows the Java runtime to negotiate a compatible supported version.
 
-I also learned the importance of tracing every code path that implements the same behavior. Updating only `ActuatorClient` would leave `ActuatorProbe` with the original restriction.
+I also learned the importance of tracing every code path that implements the same behavior. Updating only `ActuatorClient` would have left `ActuatorProbe` with the original restriction.
 
-The reproduction process taught me to distinguish between an observed test result and an assumed underlying cause. For example, the client test exposed an `SSLHandshakeException`, while the probe test only returned an empty `Optional`. I also learned to compare pasted test output against the actual Surefire reports instead of relying on manually edited excerpts.
+The reproduction process taught me to distinguish between an observed test result and an assumed underlying cause. For example, the client test exposed an `SSLHandshakeException`, while the probe test only returned an empty `Optional`. I also learned to compare test output against the actual Surefire reports instead of relying on manually edited excerpts.
 
-The plan review reinforced the importance of testing both the new behavior and existing compatibility. A TLS 1.3 regression test demonstrates the requested improvement, while TLS 1.2-only controls help ensure that the change does not unintentionally break existing connections. It also helped me identify a Mockito expectation that would otherwise become inconsistent with the production change.
+The plan-check process helped me identify missing test coverage before implementation. Adding TLS 1.2 controls alongside the TLS 1.3 regression tests made the intended behavior more explicit.
 
-The ship-gate setup taught me how to define required repository checks and enforce them before attempting to create a pull request.
+The ship-gate process taught me to define repository-specific verification commands and use a hook to prevent outgoing PR commands from proceeding without text to check.
 
 The issue-selection process taught me that finding a beginner-friendly issue is not enough. I need to verify recent repository activity, check for existing pull requests, confirm the issue is still available, and make sure I have enough time to reproduce and complete it.
 
-My next steps are to implement the accepted plan, verify both TLS 1.3 regression tests and both TLS 1.2 control tests, and run the repository's formatting and full verification commands.
+My implementation and local verification are complete. My remaining work is to finalize the contribution story, create the pull request, and complete the PR-Monitor workflow.
 
 ## Resources Used
 
