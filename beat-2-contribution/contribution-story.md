@@ -46,7 +46,7 @@ I also explored the [Open Source Issue Tracker](https://open-source-issue-tracke
 
 The latest Issue-Scout scan evaluated **641 unique candidates**. Five issues were accepted from full evaluations, and this issue was selected as a good match for my Java backend experience. The skill rated it as a straightforward, focused bug fix.
 
-I chose issue #278 because it identifies a specific problem in two Java classes: `ActuatorClient` and `ActuatorProbe`. Both use a hardcoded TLS 1.2 protocol, which can prevent connections to servers that require TLS 1.3. The proposed change was limited and provided an opportunity to learn more about Java SSL configuration, TLS protocol negotiation, and testing secure connections.
+I chose issue #278 because it identifies a specific problem in two Java classes: `ActuatorClient` and `ActuatorProbe`. Both use a hardcoded TLS 1.2 protocol, which can prevent connections to servers that require TLS 1.3. The change was limited and provided an opportunity to learn more about Java SSL configuration, TLS protocol negotiation, and testing secure connections.
 
 The Issue-Scout helped narrow down the search, but I still needed to verify the issue's behavior through reproduction and inspect the existing implementation before making changes.
 
@@ -336,9 +336,9 @@ Both custom SSL contexts are used when insecure mode is enabled. The probe and c
 
 The existing tests also contained a mock that expected `"TLSv1.2"`. That expectation needed to be updated when the production code changed to request the generic `"TLS"` protocol.
 
-### Proposed Solution
+### Implemented Solution
 
-Replace the explicit TLS 1.2 protocol request with:
+The explicit TLS 1.2 protocol request was replaced with:
 
 ```java
 SSLContext.getInstance("TLS");
@@ -462,7 +462,7 @@ The following files were changed:
    - Added TLS 1.2 control coverage.
    - Generalized the HTTPS server helper to support protocol selection and record the negotiated protocol.
 
-The existing trust-all manager, SSL initialization, exception handling, and insecure-mode behavior were preserved. The client’s existing insecure warning was also preserved.
+The existing trust-all manager, SSL initialization, exception handling, and insecure-mode behavior were preserved. The client's existing insecure warning was also preserved.
 
 No unrelated production refactoring was introduced. No README change was required because this change did not alter documented constants, configuration defaults, limits, or resource bounds.
 
@@ -488,12 +488,13 @@ The implementation is committed locally, but the pull request has not yet been c
 
 After implementation and verification, the following work remains:
 
-1. Complete the contribution story and review its evidence.
+1. Review the completed contribution story and its evidence.
 2. Prepare a concise pull request description explaining the problem, implementation, and verification.
 3. Include the accepted reproduction evidence and post-fix test results in the PR description.
-4. Create the pull request from `fix/278-actuator-tls-negotiation` to the repository's target branch.
-5. Link the pull request to issue #278.
-6. Use PR-Monitor to track the pull request and document its results.
+4. Push `fix/278-actuator-tls-negotiation` to the repository.
+5. Create the pull request from that branch to the repository's target branch.
+6. Link the pull request to issue #278.
+7. Use PR-Monitor to track the pull request and document its results.
 
 The repository requests focused pull requests, passing verification, and Conventional Commit messages with a lowercase scope. The implementation commit follows the requested format.
 
@@ -513,7 +514,7 @@ The ship-gate process taught me to define repository-specific verification comma
 
 The issue-selection process taught me that finding a beginner-friendly issue is not enough. I need to verify recent repository activity, check for existing pull requests, confirm the issue is still available, and make sure I have enough time to reproduce and complete it.
 
-My implementation and local verification are complete. My remaining work is to finalize the contribution story, create the pull request, and complete the PR-Monitor workflow.
+My implementation, local verification, and contribution story are complete. My remaining work is to push the implementation branch, create the pull request, and complete the PR-Monitor workflow.
 
 ## Resources Used
 
