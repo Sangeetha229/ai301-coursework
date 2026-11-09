@@ -20,7 +20,7 @@ I used voice-guard to check outgoing GitHub communication against my centralized
 
 **Unit 7: Ship-Gate — November 8, 2026**
 
-I used Ship-Gate to check the contribution before opening the pull request. My manifest included Spotless formatting validation and the full Maven verification. My first attempt exposed a Windows command-path issue because the manifest used `./mvnw`; I corrected it to `.\mvnw.cmd` and reran the checks. All required checks passed.
+I used Ship-Gate to check the contribution before opening the pull request. My manifest included Spotless formatting validation and the full Maven verification. My first attempt exposed a Windows command-path issue because the manifest used ./mvnw. I corrected the manifest to use the Windows Maven Wrapper command, .\mvnw.cmd, and reran the checks successfully. My direct development and testing commands were run in Git Bash using ./mvnw. All required Ship-Gate checks passed.
 
 **Unit 8: PR-Monitor — November 8, 2026**
 
@@ -30,7 +30,7 @@ I installed PR-Monitor, created a repository-specific playbook, and ran both its
 
 I searched for beginner-friendly Java issues using GitHub search commands and the Issue-Scout skill I developed in Claude Code. The skill uses my experience, preferences, search criteria, and evaluation rubric to identify issues that are relevant to my background and manageable in scope.
 
-I also explored the [Open Source Issue Tracker](https://open-source-issue-tracker.onrender.com/) to find suitable contribution opportunities. However, I found that many beginner-friendly issues were stale. Some of the issues I claimed had their claim comments deleted, and in a few cases another contributor opened a pull request after I had started working on the issue. Since I could not always complete an issue immediately due to limited time, these experiences taught me the importance of checking recent activity, verifying existing work, and selecting issues that I can realistically investigate and complete.
+I also explored the [Open Source Issue Tracker](https://open-source-issue-tracker.onrender.com/) to find suitable contribution opportunities. However, I found that many beginner-friendly issues were stale. In a different repository, a claim comment I had posted was deleted. This did not happen to Issue #278; my claim comment for the current issue remained available. I also encountered situations where another contributor opened a pull request after I had started investigating an issue. Since I could not always complete an issue immediately due to limited time, these experiences taught me the importance of checking recent activity, verifying existing work, and selecting issues that I can realistically investigate and complete.
 
 The latest Issue-Scout scan evaluated 641 unique candidates. Five issues were accepted after full evaluations, and issue #278 in `oscarbol09/jvm-mcp` was selected as a good match for my Java backend experience. The skill rated it as a straightforward, focused bug fix.
 
@@ -101,9 +101,8 @@ The reproduction used the project's existing HTTPS test fixtures and a local tes
 1. Check out the original implementation before applying the fix.
 2. Run the focused Actuator tests:
 
-   ```powershell
-   .\mvnw.cmd -pl core "-Dtest=ActuatorProbeTest,ActuatorClientTest" test
-   ```
+   ```bash
+   ./mvnw -pl core "-Dtest=ActuatorProbeTest,ActuatorClientTest" test
 
 3. Observe the TLS 1.3-only endpoint behavior.
 4. Review the client and probe test results to identify the failed connection behavior.
@@ -204,17 +203,13 @@ I also ran formatting validation and the complete Maven verification.
 
 **Commands used:**
 
-```powershell
-.\mvnw.cmd -pl core "-Dtest=ActuatorProbeTest,ActuatorClientTest" test
-```
+```markdown
+**Commands used in Git Bash:**
 
-```powershell
-.\mvnw.cmd spotless:check
-```
-
-```powershell
-.\mvnw.cmd clean verify
-```
+```bash
+./mvnw -pl core "-Dtest=ActuatorProbeTest,ActuatorClientTest" test
+./mvnw spotless:check
+./mvnw clean verify
 
 **Results after the fix:**
 
