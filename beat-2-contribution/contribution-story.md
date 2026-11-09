@@ -28,9 +28,20 @@ I installed PR-Monitor, created a repository-specific playbook, and ran both its
 
 ## Why I Chose This Issue
 
-I used issue-scout to evaluate potential Java contribution opportunities that matched my experience with Java, Git, GitHub, and backend development. I looked for an issue with a clearly defined problem, understandable requirements, active repository maintenance, and a manageable implementation scope. After evaluating candidates, I selected issue #278 in `oscarbol09/jvm-mcp`, which concerns TLS 1.3 support for insecure Actuator HTTPS connections.
+I searched for beginner-friendly Java issues using GitHub search commands and the Issue-Scout skill I developed in Claude Code. The skill uses my experience, preferences, search criteria, and evaluation rubric to identify issues that are relevant to my background and manageable in scope.
 
-On November 7, 2026, I posted a claim comment to let the maintainers know I intended to work on the issue. On November 8, I completed the reproduction, investigation, implementation, testing, and pull request preparation. This issue gave me an opportunity to understand Java SSL configuration, protocol negotiation, HTTPS test fixtures, and the importance of testing both existing and newer TLS protocol behavior.
+I also explored the [Open Source Issue Tracker](https://open-source-issue-tracker.onrender.com/) to find suitable contribution opportunities. However, I found that many beginner-friendly issues were stale. Some of the issues I claimed had their claim comments deleted, and in a few cases another contributor opened a pull request after I had started working on the issue. Since I could not always complete an issue immediately due to limited time, these experiences taught me the importance of checking recent activity, verifying existing work, and selecting issues that I can realistically investigate and complete.
+
+The latest Issue-Scout scan evaluated 641 unique candidates. Five issues were accepted after full evaluations, and issue #278 in `oscarbol09/jvm-mcp` was selected as a good match for my Java backend experience. The skill rated it as a straightforward, focused bug fix.
+
+This issue matched my preferences because I prefer focused backend bug fixes with a clearly identifiable cause and a manageable implementation scope rather than large architectural changes or issues with unclear requirements. It involved Java source code, an understandable TLS configuration problem, and two related production classes with corresponding tests. It also allowed me to use my existing Java, Git, GitHub, and testing experience while learning more about SSL configuration and TLS protocol negotiation.
+
+I chose issue #278 because it identifies a specific problem in two Java classes: `ActuatorClient` and `ActuatorProbe`. Both use a hardcoded TLS 1.2 protocol, which can prevent connections to servers that support only TLS 1.3. The expected outcome was clear: support TLS protocol negotiation while preserving the existing certificate-trust behavior. This provided an opportunity to reproduce a specific failure, implement a targeted fix, and verify the result with automated tests.
+
+On November 7, 2026, I posted a claim comment to let the maintainers know I intended to work on the issue. On November 8, I completed the reproduction, investigation, implementation, testing, and pull request preparation. This contribution helped me understand Java SSL configuration, protocol negotiation, HTTPS test fixtures, and the importance of testing both existing and newer TLS protocol behavior.
+
+The Issue-Scout helped narrow down the search, but I still needed to verify the issue's behavior through reproduction and inspect the existing implementation before making changes.
+
 
 Claim comment: [https://github.com/oscarbol09/jvm-mcp/issues/278#issuecomment-6711994926](https://github.com/oscarbol09/jvm-mcp/issues/278#issuecomment-6711994926)
 
