@@ -1,5 +1,3 @@
-
-
 # Contribution: Enable TLS 1.3 Negotiation for Insecure Actuator Connections
 
 Path: `beat-2-contribution/contribution-story.md`
@@ -7,8 +5,8 @@ Path: `beat-2-contribution/contribution-story.md`
 **Contribution Number:** [1]  
 **Student:** Sangeetha Eswaran  
 **GitHub Username:** Sangeetha229  
-**Issue:** https://github.com/oscarbol09/jvm-mcp/issues/278  
-**Pull Request:** https://github.com/oscarbol09/jvm-mcp/pull/286
+**Issue:** [https://github.com/oscarbol09/jvm-mcp/issues/278](https://github.com/oscarbol09/jvm-mcp/issues/278)  
+**Pull Request:** [https://github.com/oscarbol09/jvm-mcp/pull/286](https://github.com/oscarbol09/jvm-mcp/pull/286)
 
 ## Toolkit
 
@@ -24,9 +22,9 @@ I used voice-guard to check outgoing GitHub communication against my centralized
 
 I used Ship-Gate to check the contribution before opening the pull request. My manifest included Spotless formatting validation and the full Maven verification. My first attempt exposed a Windows command-path issue because the manifest used `./mvnw`; I corrected it to `.\mvnw.cmd` and reran the checks. All required checks passed.
 
-**Unit 8: PR-Monitor — Pending**
+**Unit 8: PR-Monitor — November 8, 2026**
 
-I opened PR #286 on November 8, 2026. I have not yet completed the PR-Monitor workflow. My next step is to use it to inspect the pull request's CI results and maintainer feedback and prepare any necessary responses.
+I installed PR-Monitor, created a repository-specific playbook, and ran both its state check and full monitoring workflow. I used five recent merged pull requests to establish a three-calendar-day initial response threshold. The monitor drafted a wait note for PR #286 because the threshold had not been reached; I kept the draft off GitHub and clarified that I should rerun the monitor on November 12 only if the discussion is still quiet.
 
 ## Why I Chose This Issue
 
@@ -34,7 +32,7 @@ I used issue-scout to evaluate potential Java contribution opportunities that ma
 
 On November 7, 2026, I posted a claim comment to let the maintainers know I intended to work on the issue. On November 8, I completed the reproduction, investigation, implementation, testing, and pull request preparation. This issue gave me an opportunity to understand Java SSL configuration, protocol negotiation, HTTPS test fixtures, and the importance of testing both existing and newer TLS protocol behavior.
 
-Claim comment: https://github.com/oscarbol09/jvm-mcp/issues/278#issuecomment-6711994926
+Claim comment: [https://github.com/oscarbol09/jvm-mcp/issues/278#issuecomment-6711994926](https://github.com/oscarbol09/jvm-mcp/issues/278#issuecomment-6711994926)
 
 **Toolkit**
 
@@ -259,18 +257,28 @@ fix(spring): allow TLS protocol negotiation for insecure actuator connections
 
 I pushed the branch to my fork and verified that the remote branch pointed to the same commit as my local branch.
 
+**November 8, 2026 — Pull Request and Monitoring**
+
+I opened PR #286 against the upstream `main` branch using my fork branch `fix/278-actuator-tls-negotiation`.
+
+I installed PR-Monitor in `~/.claude/pr-monitor/` and created a playbook with the required response, staleness, nudge, and walk-away rules. To establish a practical waiting threshold, I examined five recent merged pull requests from distinct external contributors and compared the time to their first maintainer response. Based on that small sample, I set a three-calendar-day threshold and documented that it was a guideline rather than a guaranteed response time.
+
+I ran the PR-Monitor state check and confirmed that it detected PR #286 in the upstream repository. The report showed no checks reported, no review decision, zero comments or reviews, and a quiet thread. GitHub reported the PR as mergeable, but its merge state was blocked.
+
+The full monitor run generated a wait note because the three-day threshold had not been reached. I reviewed the draft and did not post it. It also reminded me to verify the Windows Maven Wrapper command in the PR description. I clarified my next action: wait until November 12 and rerun the monitor only if the thread remains quiet. PR-Monitor did not post anything to GitHub.
+
 **Toolkit**
 
-- Tool: Git, Maven Wrapper, Claude Code, and Ship-Gate.
-- What it produced: Four changed Java files, commit `0570361`, successful verification, and a pushed feature branch.
-- Difficulties: I needed to keep the implementation within the issue's scope and ensure the Windows-specific build commands worked in Ship-Gate.
-- What changed: I kept the changes limited to the affected production classes and tests, corrected the manifest command, and verified the branch before opening the PR.
+- Tool: Git, Maven Wrapper, Claude Code, Ship-Gate, GitHub CLI, and PR-Monitor.
+- What it produced: Four changed Java files, commit `0570361`, successful verification, a pushed feature branch, PR #286, a completed PR-Monitor playbook, a state report, and a drafted wait note.
+- Difficulties: I needed to keep the implementation within the issue's scope, ensure the Windows-specific build commands worked in Ship-Gate, and distinguish a mergeable PR from an approved PR.
+- What changed: I kept the changes limited to the affected production classes and tests, corrected the manifest command, verified the branch before opening the PR, and established a three-day monitoring threshold. I also kept the monitor's wait note off the public PR thread.
 
 ## Pull Request
 
 **PR Link**
 
-https://github.com/oscarbol09/jvm-mcp/pull/286
+[https://github.com/oscarbol09/jvm-mcp/pull/286](https://github.com/oscarbol09/jvm-mcp/pull/286)
 
 **PR Description**
 
@@ -286,12 +294,11 @@ The PR explains the TLS negotiation problem, the change from `TLSv1.2` to `TLS`,
 
 **Maintainer Feedback**
 
-- No maintainer feedback has been recorded in this contribution story yet.
-- CI and review feedback will be checked using PR-Monitor.
+- November 8, 2026: none yet.
 
 **Status**
 
-Open — awaiting maintainer review.
+Awaiting review (waiting on the maintainer).
 
 Opened November 8, 2026.
 
@@ -310,6 +317,8 @@ I gained a better understanding of Java SSL context configuration and TLS protoc
 
 I also improved my experience with Maven multi-module builds, Java unit testing, Git branch management, GitHub CLI, and preparing a pull request that follows repository contribution guidelines.
 
+I gained practical experience using Claude Code hooks and supporting tools to review outgoing communication, validate changes before submission, and monitor a pull request without automatically posting responses.
+
 **Challenges Overcome**
 
 One challenge was reproducing the TLS 1.3 failure consistently before changing the implementation. I used the existing tests and their output to identify the affected client and probe behavior.
@@ -318,19 +327,25 @@ Another challenge was making sure the updated tests covered both TLS 1.2 and TLS
 
 I also encountered a Windows command-path issue in the Ship-Gate manifest. I corrected the Maven Wrapper command and reran the checks successfully.
 
+During Unit 8, I needed to distinguish between GitHub reporting that a PR was mergeable and the PR actually being approved or eligible to merge. The monitor's report showed `MERGEABLE`, but the merge state was `BLOCKED` and there was no review decision. This helped me interpret the report accurately instead of treating mergeability as approval.
+
 **What I'd Do Differently Next Time**
 
 I would inspect the repository's SSL configuration and test fixtures earlier, then identify the smallest reproducible test case before starting implementation. I would also verify the exact commands in the target operating system before adding them to automated validation manifests.
 
-After opening the pull request, I will use PR-Monitor to review CI results and maintainer feedback and respond to any requested changes.
+For future contributions, I would establish review-wait expectations from repository history before opening the PR and document the reasoning in my playbook. I would use PR-Monitor when new activity arrives, review each draft against the actual PR discussion, and post only a response that is necessary and accurate.
 
 ## Resources Used
 
-- Issue #278: https://github.com/oscarbol09/jvm-mcp/issues/278
-- Pull request #286: https://github.com/oscarbol09/jvm-mcp/pull/286
-- Repository: https://github.com/oscarbol09/jvm-mcp
+- Issue #278: [https://github.com/oscarbol09/jvm-mcp/issues/278](https://github.com/oscarbol09/jvm-mcp/issues/278)
+- Pull request #286: [https://github.com/oscarbol09/jvm-mcp/pull/286](https://github.com/oscarbol09/jvm-mcp/pull/286)
+- Repository: [https://github.com/oscarbol09/jvm-mcp](https://github.com/oscarbol09/jvm-mcp)
 - Repository contribution guidelines: `CONTRIBUTING.md`
 - Repository pull request template: `.github/PULL_REQUEST_TEMPLATE.md`
-- Java `SSLContext` API documentation: https://docs.oracle.com/en/java/javase/21/docs/api/java.base/javax/net/ssl/SSLContext.html
-- Maven Wrapper documentation: https://maven.apache.org/wrapper/
-- GitHub CLI documentation: https://cli.github.com/manual/
+- Java `SSLContext` API documentation: [https://docs.oracle.com/en/java/javase/21/docs/api/java.base/javax/net/ssl/SSLContext.html](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/javax/net/ssl/SSLContext.html)
+- Maven Wrapper documentation: [https://maven.apache.org/wrapper/](https://maven.apache.org/wrapper/)
+- GitHub CLI documentation: [https://cli.github.com/manual/](https://cli.github.com/manual/)
+- Unit 8 PR-Monitor materials: `skill/INSTALL.md`, `skill/monitor.py`, and `skill/playbook-template.md` from the AI301 Unit 8 starter repository.
+- Personal PR-Monitor playbook: `~/.claude/pr-monitor/playbook.md`
+- PR-Monitor run report: `~/.claude/pr-monitor/run-report.md`
+- PR-Monitor drafted move: `~/.claude/pr-monitor/drafted-move.md`
