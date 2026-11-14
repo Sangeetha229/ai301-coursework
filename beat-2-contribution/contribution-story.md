@@ -6,8 +6,7 @@
 **Student:** Sangeetha Eswaran  
 **GitHub Username:** Sangeetha229  
 **Issue:** [Issue #278](https://github.com/oscarbol09/jvm-mcp/issues/278)  
-**Pull Request:** [PR #286](https://github.com/oscarbol09/jvm-mcp/pull/286)  
-**Final Status:** Approved and merged on November 14, 2026
+**Pull Request:** [PR #286](https://github.com/oscarbol09/jvm-mcp/pull/286)
 
 ## Toolkit
 
@@ -21,13 +20,13 @@ I used Voice-Guard to check outgoing GitHub communication against my centralized
 
 **Unit 7: Ship-Gate — November 8, 2026**
 
-I used Ship-Gate to check the contribution before opening the pull request. My manifest included Spotless formatting validation and the full Maven verification. My first attempt exposed a Windows command-path issue because the manifest used `./mvnw`. I corrected the manifest to use the Windows Maven Wrapper command, `.\mvnw.cmd`, and reran the checks successfully. My direct development and testing commands were run in Git Bash using `./mvnw`. All required Ship-Gate checks passed.
+I used Ship-Gate to check the contribution before opening the pull request. My manifest included Spotless formatting validation and the full Maven verification. My first attempt exposed a Windows command-path issue because the manifest used `./mvnw`. I corrected the manifest to use the Windows Maven Wrapper command, `.\mvnw.cmd`, and reran the checks successfully. My direct development and testing commands were run in Git Bash using `./mvnw`. The required Ship-Gate checks passed.
 
 **Unit 8: PR-Monitor — November 8–14, 2026**
 
 I installed PR-Monitor, created a repository-specific playbook, and ran both its state check and full monitoring workflow. I used five recent merged pull requests to establish a three-calendar-day initial response threshold. The monitor drafted a wait note for PR #286 because the threshold had not been reached. I reviewed the draft and kept it off GitHub.
 
-I continued monitoring the pull request as its review progressed. On November 14, the final state report confirmed that PR #286 was merged and approved, with four passing checks. The report also showed three comments/reviews and recorded the final activity. This completed the monitoring workflow from the initial waiting period through the merged outcome.
+I continued monitoring the pull request as it moved through maintainer review. On November 14, the final state check reported `APPROVED` and `MERGED`. The monitor also reported four passing checks. The full monitoring workflow was run after the merge, and I updated the monitoring report and log to record the final outcome.
 
 ## Why I Chose This Issue
 
@@ -41,7 +40,7 @@ This issue matched my preferences because I prefer focused backend bug fixes wit
 
 I chose issue #278 because it identifies a specific problem in two Java classes: `ActuatorClient` and `ActuatorProbe`. Both originally used a hardcoded TLS 1.2 protocol, which prevented successful connections to endpoints configured to support TLS 1.3 only. The expected outcome was to address the protocol compatibility problem while preserving the existing certificate-trust behavior.
 
-On November 7, 2026, I posted a claim comment to let the maintainers know I intended to work on the issue. I then investigated the affected code, reproduced the problem, implemented a change, and prepared a pull request. This contribution helped me understand Java SSL configuration, HTTPS test fixtures, TLS protocol settings, and the importance of testing and reviewing changes before submission.
+On November 7, 2026, I posted a claim comment to let the maintainers know I intended to work on the issue. I then investigated the affected code, reproduced the problem, implemented a change, and prepared a pull request. The contribution was ultimately approved and merged. It helped me understand Java SSL configuration, HTTPS test fixtures, TLS protocol settings, and the importance of testing and reviewing changes before submission.
 
 The Issue-Scout helped narrow down the search, but I still needed to verify the issue's behavior through reproduction and inspect the existing implementation before making changes.
 
@@ -66,7 +65,7 @@ The issue requested support for TLS 1.3 when connecting to insecure Actuator HTT
 
 The Actuator client and probe should be able to connect to HTTPS Actuator endpoints that support TLS 1.3, while preserving the existing behavior for insecure certificate trust.
 
-**Current Behavior**
+**Current Behavior Before the Fix**
 
 The original implementation explicitly requested `TLSv1.2`. During baseline testing, the TLS 1.3-only HTTPS test endpoint could not complete the connection successfully.
 
@@ -96,7 +95,7 @@ The client test reported an `SSLHandshakeException`, and the probe test returned
 - Repository: `oscarbol09/jvm-mcp`.
 - Implementation branch: `fix/278-actuator-tls-negotiation`.
 
-The reproduction used a local JDK HTTPS server configured to support TLS 1.3 only. I used test code to exercise the affected Actuator client and probe against that endpoint.
+The reproduction used a local JDK HTTPS test endpoint configured to support TLS 1.3 only. I used test code to exercise the affected Actuator client and probe against that endpoint.
 
 **Steps to Reproduce**
 
@@ -126,9 +125,7 @@ The `ActuatorClientTest` TLS 1.3-only endpoint test failed with an `SSLHandshake
 
 The `ActuatorProbeTest` TLS 1.3-only endpoint test returned an empty `Optional` instead of the expected beans payload.
 
-After the initial implementation changed the SSL context from `TLSv1.2` to generic `TLS`, the focused test run reported 70 passing tests.
-
-After the later revision to explicit `TLSv1.3`, I reran the focused tests. The revised implementation also passed all 70 tests:
+After the initial implementation changed the SSL context from `TLSv1.2` to generic `TLS`, the focused test run reported:
 
 - `ActuatorProbeTest`: 27 passed.
 - `ActuatorClientTest`: 43 passed.
@@ -136,12 +133,20 @@ After the later revision to explicit `TLSv1.3`, I reran the focused tests. The r
 - Failures: 0.
 - Errors: 0.
 
-The final maintainer review independently confirmed that the TLS 1.2/1.3 matrix integration tests passed.
+These results belonged to the initial generic `TLS` implementation. That implementation was subsequently revised after the CI security scan identified blocking findings.
+
+After the revised implementation explicitly used `TLSv1.3`, I reran the focused tests. The revised implementation also passed:
+
+- `ActuatorProbeTest`: 27 passed.
+- `ActuatorClientTest`: 43 passed.
+- Total tests: 70.
+- Failures: 0.
+- Errors: 0.
 
 **Toolkit**
 
 - Tool: Reproduction test code and Maven Wrapper.
-- What it produced: A baseline reproduction showing the TLS 1.3-only endpoint failure and passing focused test results after the implementation changes.
+- What it produced: A baseline reproduction showing the TLS 1.3-only endpoint failure and focused test results for both implementation revisions.
 - Difficulties: The baseline failure was visible through the client handshake exception and probe result, but the exact server-side handshake cause was not captured.
 - What changed: I documented the observed failure without assuming an unverified low-level TLS error and used the reproduction tests to guide the implementation.
 
@@ -163,9 +168,9 @@ My initial implementation changed the protocol name to generic `TLS`:
 SSLContext.getInstance("TLS");
 ```
 
-The focused tests passed with that implementation. However, the CI Security & Secret Scan reported blocking Semgrep findings against the generic TLS SSL context in both production classes.
+The focused tests passed with that implementation. However, the subsequent CI Security & Secret Scan reported blocking Semgrep findings against the generic TLS SSL context in both production classes.
 
-This meant that passing local tests alone was not sufficient. I needed to respond to the security scan findings and revise the implementation.
+This meant that passing the functional tests alone was not sufficient. I needed to respond to the security scan findings and revise the implementation.
 
 **Revised Solution**
 
@@ -181,7 +186,7 @@ I preserved the existing insecure certificate-trust behavior and warnings becaus
 
 I also updated the related test expectation to reflect the revised SSL context configuration.
 
-The maintainer later verified that this implementation correctly allows TLS 1.3 negotiation while maintaining fallback to TLS 1.2 on JDK 21+.
+The maintainer subsequently verified that the revised implementation correctly allows TLS 1.3 negotiation while maintaining fallback to TLS 1.2 on JDK 21+. The maintainer also confirmed that the change cleanly resolved the SAST check.
 
 **Implementation Plan**
 
@@ -195,6 +200,7 @@ The maintainer later verified that this implementation correctly allows TLS 1.3 
 8. Review the final diff and ensure only the planned files are changed.
 9. Respond to CI findings and revise the implementation as needed.
 10. Push the updated branch to my fork and maintain the pull request against the upstream repository.
+11. Address maintainer feedback and verify the final CI results.
 
 **Toolkit**
 
@@ -205,15 +211,15 @@ The maintainer later verified that this implementation correctly allows TLS 1.3 
 
 ## Testing Strategy
 
-The testing strategy focused on reproducing the original behavior and checking the implementation after the change.
+The testing strategy focused on reproducing the original behavior and checking the implementation after each change.
 
 The baseline focused test run included the TLS 1.3-only reproduction cases that I added. It reported 68 tests, with one failure and one error. The client test showed an SSL handshake failure for the TLS 1.3-only endpoint, while the probe test returned an empty result instead of the expected payload.
 
-After the initial change to generic `TLS`, the focused test suite contained 70 tests, all passing. After the subsequent revision to explicit `TLSv1.3`, I reran the same focused tests and again obtained 70 passing tests: 27 in `ActuatorProbeTest` and 43 in `ActuatorClientTest`, with no failures or errors.
+After the initial change to generic `TLS`, the focused test suite contained 70 tests, all passing. However, the CI Security & Secret Scan subsequently reported two blocking Semgrep findings against the generic TLS SSL context. I responded by changing both production classes to use `TLSv1.3`.
 
-The CI Security & Secret Scan initially reported two blocking Semgrep findings against the generic `TLS` SSL context. I responded by changing both production classes to use `TLSv1.3`.
+After this revision, I reran the focused Actuator tests. All 70 tests passed, with 27 tests passing in `ActuatorProbeTest` and 43 passing in `ActuatorClientTest`.
 
-After this revision, I ran the full Maven verification locally. The reported results were:
+I also ran the full Maven verification locally. The reported results were:
 
 - Core module: 595 tests passed.
 - MCP server module: 469 tests passed.
@@ -223,7 +229,7 @@ After this revision, I ran the full Maven verification locally. The reported res
 - Full Maven verification completed with `BUILD SUCCESS`.
 - `git diff --check` passed.
 
-The final maintainer review confirmed that the revised implementation cleanly resolved the SAST check. The maintainer also confirmed that the TLS 1.2/1.3 matrix integration tests passed and that CI was fully green across all runners.
+The final maintainer review provided additional confirmation beyond my local test results. The maintainer verified the TLS 1.2/1.3 matrix integration tests and confirmed that CI was fully green across all runners.
 
 **Commands used in Git Bash:**
 
@@ -237,7 +243,7 @@ git diff --check
 **Toolkit**
 
 - Tool: Maven Wrapper, Spotless, JaCoCo, Ship-Gate, and GitHub Actions.
-- What it produced: Focused test results for the revised implementation, local full-verification results, and final CI confirmation.
+- What it produced: Baseline reproduction results, focused test results for both implementation revisions, local full-verification results, and final CI confirmation from the maintainer.
 - Difficulties: The initial Ship-Gate manifest used a Unix-style Maven Wrapper command that did not work in the Windows environment. The initial generic TLS implementation also triggered security scan findings.
 - What changed: I updated the manifest to use `.\mvnw.cmd`, reran the checks, and revised the SSL context configuration in response to the Semgrep findings.
 
@@ -295,7 +301,7 @@ Commit message:
 fix(spring): use explicit TLS 1.3 context for insecure actuator connections
 ```
 
-I verified that the pull request head pointed to this commit. The revised implementation passed the focused 70-test suite and the local full Maven verification.
+I verified that the pull request head pointed to this commit. The revised implementation passed the 70 focused Actuator tests.
 
 **Pull Request and Monitoring**
 
@@ -307,27 +313,31 @@ I ran the PR-Monitor state check and confirmed that it detected PR #286 in the u
 
 The monitor generated a wait note when the response threshold had not been reached. I reviewed the draft and did not post it. PR-Monitor did not post anything to GitHub.
 
-On November 14, 2026, the maintainer confirmed the revised implementation and approved and merged the pull request. The maintainer's comment stated:
-
-> Verified the update to `TLSv1.3`. It correctly allows negotiation of TLS 1.3 while maintaining fallback to TLS 1.2 on JDK 21+, cleanly resolves the SAST check, and passes the TLS 1.2/1.3 matrix integration tests. CI is fully green across all runners. Approving and merging.
-
-The final PR-Monitor state report recorded:
+On November 14, 2026, the maintainer approved and merged PR #286. The final PR-Monitor state report showed:
 
 ```text
-- checks: 4 passing
-- review decision: APPROVED
-- thread: 3 comment(s)/review(s)
-- state: MERGED: the PR is merged
+review decision: APPROVED
+checks: 4 passing
+state: MERGED: the PR is merged
 ```
 
-This confirmed that the contribution had progressed from an open pull request awaiting review to an approved and merged contribution.
+The maintainer's final comment confirmed:
+
+- The updated `TLSv1.3` implementation correctly allows TLS 1.3 negotiation.
+- TLS 1.2 fallback is maintained on JDK 21+.
+- The SAST check is clean.
+- TLS 1.2/1.3 matrix integration tests pass.
+- CI is fully green across all runners.
+- The pull request was approved and merged.
+
+I ran the full PR-Monitor workflow after the merge and updated `run-report.md` and `monitor-log.md` to record the final outcome.
 
 **Toolkit**
 
 - Tool: Git, Maven Wrapper, Claude Code, Ship-Gate, GitHub CLI, GitHub Actions, and PR-Monitor.
-- What it produced: Four changed Java files, an initial implementation commit, a revised implementation commit, local verification results, a pushed feature branch, PR #286, a completed PR-Monitor playbook, and final monitoring evidence.
+- What it produced: Four changed Java files, an initial implementation commit, a revised implementation commit, local verification results, a pushed feature branch, PR #286, a completed PR-Monitor playbook, and final monitoring records.
 - Difficulties: I needed to keep the implementation within the issue's scope, ensure the Windows build commands worked in Ship-Gate, respond to the Semgrep findings, and distinguish a mergeable PR from an approved PR.
-- What changed: I revised the implementation after CI feedback, pushed the new commit, and used PR-Monitor to track the review through approval and merge.
+- What changed: I revised the implementation after CI feedback, pushed the new commit, and used PR-Monitor to track the review. The maintainer ultimately approved and merged the contribution.
 
 ## Pull Request
 
@@ -345,32 +355,33 @@ It targets `main` in the upstream repository `oscarbol09/jvm-mcp` and uses my fo
 
 `Sangeetha229:fix/278-actuator-tls-negotiation`
 
-The initial implementation changed the SSL context from `TLSv1.2` to generic `TLS`. After the CI security scan reported blocking Semgrep findings, I revised both production classes to use `TLSv1.3`. The final implementation is recorded in commit `ff484ee`.
+The initial implementation changed the SSL context from `TLSv1.2` to generic `TLS`. After the CI security scan reported blocking Semgrep findings, I revised both production classes to use `TLSv1.3`. The final revision is commit `ff484ee`.
 
 **Maintainer Feedback and CI**
 
-The maintainer reviewed the revised implementation and confirmed:
+The maintainer's final review confirmed the revised implementation:
 
-- TLS 1.3 negotiation works.
-- TLS 1.2 fallback is maintained on JDK 21+.
-- The SAST check is clean.
-- The TLS 1.2/1.3 matrix integration tests pass.
-- CI is fully green across all runners.
+> Verified the update to `TLSv1.3`. It correctly allows negotiation of TLS 1.3 while maintaining fallback to TLS 1.2 on JDK 21+, cleanly resolves the SAST check, and passes the TLS 1.2/1.3 matrix integration tests. CI is fully green across all runners. Approving and merging.
 
-The maintainer explicitly approved and merged the pull request on November 14, 2026.
+The final PR-Monitor state check on November 14, 2026, reported:
+
+- Review decision: `APPROVED`.
+- Checks: 4 passing.
+- State: `MERGED`.
+- Thread: 4 comments/reviews.
 
 **Final Status**
 
-<badge color="success">Approved and merged</badge>
+<badge color="success">Approved and merged — November 14, 2026</badge>
 
-PR #286 is merged into the upstream repository. The final PR-Monitor report confirmed the merged state, an `APPROVED` review decision, and four passing checks.
+PR #286 was approved and merged into the upstream repository. The maintainer confirmed that the TLS 1.3 implementation preserved TLS 1.2 fallback on JDK 21+, resolved the SAST finding, passed the TLS 1.2/1.3 matrix integration tests, and had fully green CI across all runners.
 
 **Toolkit**
 
 - Tool: GitHub CLI (`gh`), Git, GitHub Actions, and Ship-Gate.
-- What it produced: Pull request #286, a revision addressing the initial security scan findings, and a successfully merged upstream contribution.
+- What it produced: Pull request #286, a revision addressing the initial security scan findings, and a merged upstream contribution.
 - Difficulties: The PR description and implementation needed to remain consistent as the code changed in response to CI feedback.
-- What changed: I revised the implementation, pushed the new commit, and completed the review process with maintainer approval and a successful merge.
+- What changed: I revised the implementation, pushed the new commit, and completed the review process. The final maintainer approval and merge confirmed that the contribution was accepted.
 
 ## Learnings and Reflections
 
@@ -390,11 +401,11 @@ Another challenge was responding to the Semgrep findings. The initial generic `T
 
 I also encountered a Windows command-path issue in the Ship-Gate manifest. I corrected the Maven Wrapper command and reran the checks successfully.
 
-During Unit 8, I needed to distinguish between GitHub reporting that a PR was mergeable and the PR actually being approved or eligible to merge. The monitor's report showed `MERGEABLE`, but the merge state was `BLOCKED` and the review decision was `CHANGES_REQUESTED`. This helped me interpret the report accurately instead of treating mergeability as approval.
+During Unit 8, I needed to distinguish between GitHub reporting that a PR was mergeable and the PR actually being approved or eligible to merge. The monitor's report showed `MERGEABLE`, but the merge state was `BLOCKED` and the review decision was `CHANGES_REQUESTED` at that earlier point. This helped me interpret the report accurately instead of treating mergeability as approval.
 
-The final review demonstrated the importance of responding to feedback and validating changes at multiple levels. The maintainer confirmed that the TLS 1.3 update preserved TLS 1.2 fallback on JDK 21+, resolved the SAST finding, passed the TLS protocol integration matrix, and achieved green CI across all runners.
+I also learned to distinguish between what a test observes and what I infer from it. A successful connection to a TLS 1.3-only endpoint is useful evidence, but without an explicit assertion on the negotiated session protocol, I should not claim that the test independently verified the negotiated protocol. The maintainer's final review provided confirmation of the TLS 1.3 negotiation and TLS 1.2 fallback behavior.
 
-I also learned to distinguish between what a test observes and what I infer from it. A successful connection to a TLS 1.3-only endpoint is useful evidence, but without an explicit assertion on the negotiated session protocol, I should not claim that my local test independently verified the negotiated protocol. The maintainer's final integration-test review provided additional confirmation of the protocol behavior.
+The most important lesson was that a contribution does not end when the code works locally. It must also satisfy the project's security checks, integration tests, review requirements, and CI process. Responding to the SAST finding and getting the revised implementation approved helped me experience that complete process.
 
 **What I'd Do Differently Next Time**
 
@@ -406,14 +417,14 @@ Finally, I would preview rendered Markdown before committing documentation. Brok
 
 ## Resources Used
 
-- Issue #278: https://github.com/oscarbol09/jvm-mcp/issues/278
-- Pull request #286: https://github.com/oscarbol09/jvm-mcp/pull/286
-- Repository: https://github.com/oscarbol09/jvm-mcp
+- Issue #278: [https://github.com/oscarbol09/jvm-mcp/issues/278](https://github.com/oscarbol09/jvm-mcp/issues/278)
+- Pull request #286: [https://github.com/oscarbol09/jvm-mcp/pull/286](https://github.com/oscarbol09/jvm-mcp/pull/286)
+- Repository: [https://github.com/oscarbol09/jvm-mcp](https://github.com/oscarbol09/jvm-mcp)
 - Repository contribution guidelines: `CONTRIBUTING.md`
 - Repository pull request template: `.github/PULL_REQUEST_TEMPLATE.md`
-- Java `SSLContext` API documentation: https://docs.oracle.com/en/java/javase/21/docs/api/java.base/javax/net/ssl/SSLContext.html
-- Maven Wrapper documentation: https://maven.apache.org/wrapper/
-- GitHub CLI documentation: https://cli.github.com/manual/
+- Java `SSLContext` API documentation: [https://docs.oracle.com/en/java/javase/21/docs/api/java.base/javax/net/ssl/SSLContext.html](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/javax/net/ssl/SSLContext.html)
+- Maven Wrapper documentation: [https://maven.apache.org/wrapper/](https://maven.apache.org/wrapper/)
+- GitHub CLI documentation: [https://cli.github.com/manual/](https://cli.github.com/manual/)
 - Unit 8 PR-Monitor materials: `skill/INSTALL.md`, `skill/monitor.py`, and `skill/playbook-template.md` from the AI301 Unit 8 starter repository.
 - Personal PR-Monitor playbook: `~/.claude/pr-monitor/playbook.md`
 - PR-Monitor run report: `~/.claude/pr-monitor/run-report.md`
