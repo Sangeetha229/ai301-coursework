@@ -84,15 +84,6 @@ The real pull request exposed a problem that a generic checklist could miss:
     README update is required.
 ```
 
-The scope change was also documented:
-
-```diff
-- # Scope: where your pull request lives, and the rules of the room
-- Only pull requests against the course's Path Review repository are in scope this week
-+ # Scope: where your pull request lives, and the rules of the wild
-+ Any public repository.
-```
-
 This experience showed why repository-specific requirements matter. A pull request can contain a correct implementation and passing tests but still be incomplete because its description does not follow the project's own template.
 
 ### Ship-Gate
